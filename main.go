@@ -105,9 +105,9 @@ func process(m instagram.Media, tagBatches [][]string) {
 	log.Printf("TRACE: Done processing media %s.", m.ID)
 
 	// Refresh media object to read final number of likes.
-	m, err := client.Media.Get(m.ID)
+	media, err := client.Media.Get(m.ID)
 	if err == nil {
-		log.Printf("TRACE: Total likes for %s is >>> %d <<<", m.Likes.Count)
+		log.Printf("TRACE: Total likes for %s is >>> %d <<<", media.Likes.Count)
 	}
 }
 
