@@ -37,6 +37,9 @@ func apiAddComment(mediaId string, text string) (string, error) {
 	}
 	log.Printf("TRACE: Comment added on media %s", mediaId)
 
+	// Give 3 seconds of delay since I have seen API not immediately returning the submitted comment
+	<-time.NewTimer(time.Duration(3) * time.Second).C
+
 	// Find id of the comment among all comments by comparing with exact full text
 	comments, err := client.Comments.MediaComments(mediaId)
 	if err != nil {
@@ -46,7 +49,6 @@ func apiAddComment(mediaId string, text string) (string, error) {
 
 	var id string
 	for _, c := range comments {
-		log.Printf("\"%s\"==\"%s\"", c.Text, text)
 		if c.Text == text {
 			id = c.ID
 			break
@@ -107,7 +109,7 @@ func process(m instagram.Media, tagBatches [][]string) {
 	// Refresh media object to read final number of likes.
 	media, err := client.Media.Get(m.ID)
 	if err == nil {
-		log.Printf("TRACE: Total likes for %s is >>> %d <<<", media.Likes.Count)
+		log.Printf("TRACE: Total likes for %s is >>> %d <<<", media.ID, media.Likes.Count)
 	}
 }
 
@@ -122,6 +124,7 @@ func getHashtagBatches() [][]string {
 
 func main() {
 	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	log.SetOutput(os.Stdout)
 	client = instagram.NewClient(nil)
 
 	if os.Getenv(EnvAccessToken) == "" {
@@ -141,7 +144,7 @@ func main() {
 	log.Printf("INFO: End-to-end completion time for a media: ~%s", CommentInterval*time.Duration(len(tagBatches)))
 	log.Printf("INFO: Configured CommentInterval: %s", CommentInterval)
 	log.Printf("INFO: Configured RecentMediaPollInterval: %s", RecentMediaPollInterval)
-	log.Printf("TRACE: Starting main loop.")
+	log.Printf("TRACE: Starting main loop.\n")
 
 	minDate := time.Now()
 	ticker := time.NewTicker(RecentMediaPollInterval)
@@ -162,7 +165,6 @@ func main() {
 		for _, m := range media {
 			go process(m, tagBatches)
 		}
-
 	}
 	log.Panicf("ERROR: main loop should have never exited.")
 }
