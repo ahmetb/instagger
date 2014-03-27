@@ -13,8 +13,8 @@ import (
 var (
 	EnvAccessToken          = "ACCESS_TOKEN"
 	EnvHashtags             = "HASHTAGS"
-	CommentInterval         = time.Duration(120) * time.Second
-	RecentMediaPollInterval = time.Duration(15) * time.Second
+	CommentInterval         = time.Duration(5) * time.Minute
+	RecentMediaPollInterval = time.Duration(20) * time.Second
 	HashtagBatchSize        = 4
 	hashtags                []string
 )
@@ -87,7 +87,6 @@ func process(m instagram.Media, tagBatches [][]string) {
 			log.Printf("WARN: Received empty id from apiComment function on media %s, possibly a leak.", m.ID)
 			break
 		}
-		log.Printf("TRACE: Comment %s added on media %s.", commentId, m.ID)
 
 		// Sleep for a while
 		timer := time.NewTimer(CommentInterval)
